@@ -44,44 +44,44 @@ class CacheManager {
         // access to. Use absolute paths for best results.  Relative paths may have unexpected behavior
         // when you include this.  They'll usually work, you'll just want to test them.
         if ($type == 'db') {
-            if (preg_match('|mysql://([^:]*):([^@]*)@([^/]*)/(.*)|', $connection, $matches)) {
-                //Array ( [0] => mysql://user:password@server/database [1] => user [2] => password [3] => server [4] => database ) 
-                $db = mysql_connect($matches[3], $matches[1], $matches[2]);
-                mysql_select_db($matches[4], $db);
-
-                /*
-                 * If high performance is crucial, you can easily comment
-                 * out this query once you've created your database table.
-                 */
-                mysql_query("CREATE TABLE IF NOT EXISTS `$table` (
-                             `request` CHAR( 35 ) NOT NULL ,
-                             `response` MEDIUMTEXT NOT NULL ,
-                             `expiration` DATETIME NOT NULL ,
-                              INDEX ( `request` )
-                            ) TYPE = MYISAM
-			", $db);
-
-                $result = mysql_query("SELECT COUNT(*) FROM $table", $db);
-                $result = mysql_fetch_row($result);
-                if ($result[0] > $this->max_cache_rows) {
-                    mysql_query("DELETE FROM $table WHERE expiration < DATE_SUB(NOW(), INTERVAL $cache_expire second)", $db);
-                    mysql_query('OPTIMIZE TABLE ' . $this->cache_table, $db);
-                }
+//            if (preg_match('|mysql://([^:]*):([^@]*)@([^/]*)/(.*)|', $connection, $matches)) {
+//                //Array ( [0] => mysql://user:password@server/database [1] => user [2] => password [3] => server [4] => database ) 
+//                $db = mysql_connect($matches[3], $matches[1], $matches[2]);
+//                mysql_select_db($matches[4], $db);
+//
+//                /*
+//                 * If high performance is crucial, you can easily comment
+//                 * out this query once you've created your database table.
+//                 */
+//                mysql_query("CREATE TABLE IF NOT EXISTS `$table` (
+//                             `request` CHAR( 35 ) NOT NULL ,
+//                             `response` MEDIUMTEXT NOT NULL ,
+//                             `expiration` DATETIME NOT NULL ,
+//                              INDEX ( `request` )
+//                            ) TYPE = MYISAM
+//			", $db);
+//
+//                $result = mysql_query("SELECT COUNT(*) FROM $table", $db);
+//                $result = mysql_fetch_row($result);
+//                if ($result[0] > $this->max_cache_rows) {
+//                    mysql_query("DELETE FROM $table WHERE expiration < DATE_SUB(NOW(), INTERVAL $cache_expire second)", $db);
+//                    mysql_query('OPTIMIZE TABLE ' . $this->cache_table, $db);
+//                }
                 $this->cache = 'db';
-                $this->cache_db = $db;
-                $this->cache_table = $table;
-            }
+//                $this->cache_db = $db;
+//                $this->cache_table = $table;
+//            }
         } elseif ($type == 'fs') {
             $this->cache = 'fs';
-            $connection = realpath($connection);
-            $this->cache_dir = $connection;
-            if ($dir = opendir($this->cache_dir)) {
-                while ($file = readdir($dir)) {
-                    if (substr($file, -6) == '.cache' && ((filemtime($this->cache_dir . '/' . $file) + $cache_expire) < time())) {
-                        unlink($this->cache_dir . '/' . $file);
-                    }
-                }
-            }
+//            $connection = realpath($connection);
+//            $this->cache_dir = $connection;
+//            if ($dir = opendir($this->cache_dir)) {
+//                while ($file = readdir($dir)) {
+//                    if (substr($file, -6) == '.cache' && ((filemtime($this->cache_dir . '/' . $file) + $cache_expire) < time())) {
+//                        unlink($this->cache_dir . '/' . $file);
+//                    }
+//                }
+//            }
         } elseif($type == 'memcached')  {
             // Call memcache
             $this->memcache = new Memcache; // instantiating memcache extension class
@@ -119,14 +119,14 @@ class CacheManager {
                 return false;
             }
         } elseif ($this->cache == 'fs') {
-            $file = $this->cache_dir . '/' . $reqhash . '.cache';
-            if (file_exists($file)) {
-                if ($this->php_version[0] > 4 || ($this->php_version[0] == 4 && $this->php_version[1] >= 3)) {
-                    return file_get_contents($file);
-                } else {
-                    return implode('', file($file));
-                }
-            }
+//            $file = $this->cache_dir . '/' . $reqhash . '.cache';
+//            if (file_exists($file)) {
+//                if ($this->php_version[0] > 4 || ($this->php_version[0] == 4 && $this->php_version[1] >= 3)) {
+//                    return file_get_contents($file);
+//                } else {
+//                    return implode('', file($file));
+//                }
+//            }
         } elseif($this->cache == 'memcached')  {
             // Call memcache
             return unserialize($this->memcache->get($reqhash));
