@@ -12,7 +12,10 @@
  */
 class Credentials {
 
-
+const API_KEY = "";
+const API_SECRET = "";
+const TOKEN_KEY = "";
+const TOKEN_SECRET = "";
 
 }
 
