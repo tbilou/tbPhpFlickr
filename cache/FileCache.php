@@ -10,7 +10,6 @@
  *
  * @author tbilou
  */
-
 require_once 'iCache.php';
 
 class FileCache implements iCache {
@@ -20,7 +19,7 @@ class FileCache implements iCache {
     var $cache_key;
     var $cache_request;
     var $php_version;
-    
+
     //put your code here
     public function __construct() {
         $this->php_version = explode("-", phpversion());
@@ -28,14 +27,7 @@ class FileCache implements iCache {
 
         $connection = realpath(sys_get_temp_dir());
         $this->cache_dir = $connection;
-        
-        if ($dir = opendir($this->cache_dir)) {
-            while ($file = readdir($dir)) {
-                if (substr($file, -6) == '.cache' && ((filemtime($this->cache_dir . '/' . $file) + $this->cache_expire) < time())) {
-                    unlink($this->cache_dir . '/' . $file);
-                }
-            }
-        }
+
     }
 
     public function cache($request, $response) {
@@ -50,6 +42,10 @@ class FileCache implements iCache {
         $reqhash = md5(serialize($request));
 
         $file = $this->cache_dir . "/" . $reqhash . ".cache";
+        $dirname = dirname($file);
+        if (!is_dir($dirname)) {
+            mkdir($dirname, 0755, true);
+        }
         $fstream = fopen($file, "w");
         $result = fwrite($fstream, $response);
         fclose($fstream);
@@ -63,13 +59,18 @@ class FileCache implements iCache {
             else
                 $request[$key] = (string) $request[$key];
         }
-        //if ( is_user_logged_in() ) print_r($request);
+
         $reqhash = md5(serialize($request));
         $this->cache_key = $reqhash;
         $this->cache_request = $request;
 
         $file = $this->cache_dir . '/' . $reqhash . '.cache';
         if (file_exists($file)) {
+            // Check if cache is still valid
+            if (substr($file, -6) == '.cache' && ((filemtime($file) + $this->cache_expire) < time())) {
+                //unlink($file);
+                return;
+            }
             if ($this->php_version[0] > 4 || ($this->php_version[0] == 4 && $this->php_version[1] >= 3)) {
                 return file_get_contents($file);
             } else {

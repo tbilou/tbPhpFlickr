@@ -17,11 +17,17 @@ class tbPhpFlickr {
     var $rest_endpoint = 'http://api.flickr.com/services/rest/';
     var $response;
     var $parsed_response;
-     
 
-    public function __construct($die_on_error = false) {
+    public function __construct($cache = null, $die_on_error = false) {
        $this->die_on_error = $die_on_error;
-       $this->cache = new noCache();
+       
+       if (!$cache)
+            $this->cache = new noCache();
+       else
+           $this->cache = $cache;
+       
+       if (Credentials::API_KEY == "")
+           die("No Credentials Found");
     }
     
 
